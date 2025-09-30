@@ -1,0 +1,37 @@
+# Gradle
+../.gradle
+build/
+!build/libs/*.jar  # 실행 jar는 남기고 나머지는 무시
+
+# === IntelliJ / IDE ===
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Git
+.git
+.gitignore
+
+# === OS & 편집기 ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# === 로그 ===
+*.log
+logs/
+log/
+*.out
+
+# === 환경 설정 파일 (로컬에만 있어야 하는 것들) ===
+.env
+.env.*
+
+# === CI/CD 임시 파일 ===
+*.pid
+*.seed
+*.lock

@@ -1,0 +1,52 @@
+# local 전용 설정
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: ${DB_URL_LOCAL}
+    username: ${DB_USERNAME_LOCAL}
+    password: ${DB_PASSWORD_LOCAL}
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    open-in-view: false  # OSIV 비활성화 (Lazy Loading을 서비스 계층에서 처리해야 함)
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 50
+        order_inserts: true # 같은 엔티티 순서대로 정렬해서 batch 효율을 올리는 옵션임
+        order_updates: true
+        default_batch_fetch_size: 50
+
+
+#    hikari:
+#      maximum-pool-size: 100
+#      minimum-idle: 15
+#      idle-timeout: 10000
+#      max-lifetime: 30000
+#      connection-timeout: 30000  # 30초 대기 허용
+
+  # TO_SERVER 또는 RDS 연결 시 사용
+#  jpa:
+#    open-in-view: false  # OSIV 비활성화 (Lazy Loading을 서비스 계층에서 처리해야 함)
+#    hibernate:
+#      ddl-auto: create # update
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.MySQL8Dialect
+#        format_sql: true
+#        jdbc:
+#          batch_size: 50
+#        order_inserts: true
+#        order_updates: true
+#        default_batch_fetch_size: 50
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace

@@ -1,0 +1,80 @@
+# 공통 설정
+spring:
+  # 도커 사용하여 배포하면 여기에 있는 옵션보다 docker-compose.yml 파일에 있는 프로필 옵션이 우선시되어 적용됨
+  profiles:
+    active: local
+#    active: dev
+
+  data: # 페이징 기본 설정
+    web:
+      pageable:
+        default-page-size: 15
+        max-page-size: 100
+
+#  web:
+#    resources:
+#      add-mappings: false # 정적 리소스 자동 매핑 끄기
+
+
+  # 스프링부트 Jackson 설정. LocalDateTime 사용할 때의 time zone 지정
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false # ISO-8601 문자열로 변환
+    time-zone: Asia/Seoul
+
+
+#cloud: # 원래는 EC2에 권한 부여해서 하는데, 로컬에서 테스트 할 때는 S3에 직접 접근하기 위해 이 key들이 필요함
+#  aws:
+#    credentials:
+#      access-key: ${AWS_ACCESS_KEY}
+#      secret-key: ${AWS_SECRET_KEY}
+#    region:
+#      static: ap-northeast-2
+#    s3:
+#      bucket: ${AWS_S3_BUCKET}
+
+# 이게 default 설정인데, 나중에 혹시 바꾸고 싶으면 여기서 바꾸면 됨
+springdoc:
+  api-docs:
+    enabled: true  # API 문서(`/v3/api-docs`) 활성화 여부 (기본값: true)
+    path: /v3/api-docs  # API 문서의 엔드포인트 변경 (기본값: /v3/api-docs)
+    groups.enabled: true  # 여러 개의 API 그룹을 지원할지 여부
+
+  swagger-ui:
+    enabled: true  # Swagger UI 활성화 여부 (기본값: true)
+    path: /swagger-ui.html  # Swagger UI 접속 경로 변경 (기본값: /swagger-ui.html)
+    operationsSorter: method  # API 정렬 기준 (alpha: 알파벳순, method: HTTP 메서드 순)
+    tagsSorter: alpha  # 태그 정렬 방식 (alpha: 알파벳순 정렬)
+    display-request-duration: true  # 요청 실행 시간 표시 여부
+    doc-expansion: list  # Swagger UI에서 API 설명의 기본 펼침 상태 (none: 닫힘, list: 펼침, full: 전체 펼침)
+    persistAuthorization: true  # 페이지 새로고침 후에도 Authorization 헤더 유지 여부
+    defaultModelsExpandDepth: -1  # 모델 스키마의 기본 펼침 깊이 (-1이면 모델 펼쳐지지 않음)
+
+  paths-to-match:  # OpenAPI 문서에서 포함할 엔드포인트 패턴
+#    - /api/**  # /api로 시작하는 모든 경로 포함
+#    - /admin/**  # /admin으로 시작하는 모든 경로 포함
+  cache:
+    disabled: true  # OpenAPI 문서의 캐싱 비활성화 (기본값: false)
+  show-actuator: false  # Spring Actuator 엔드포인트를 Swagger UI에 표시할지 여부 (기본값: false)
+
+
+
+# 톰캣 관련 메트릭 확인하려면 아래의 옵션 있어야 함
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
+
+  # 개발 테스트용 (postman 접근할 수 있도록 열어줌)
+  address: 0.0.0.0   # 모든 IP에서 접근 허용. 이거 디폴트는 127.0.0.1 (자기 자신)임
+  port: 8081         # 기본 포트
+
+  servlet:
+    session:
+      timeout: 30m # 세션 타임아웃 시간 (default = 30분)
+
+
+# 인증 관련 필터체인 로그 (어떤 필터에서 막혔는지 확인을 위한 로그)
+#logging:
+#  level:
+#    org.springframework.security: TRACE
