@@ -1,8 +1,9 @@
 package com.elim.server.gas_monitoring.service;
 
 import com.elim.server.gas_monitoring.config.SerialPortConfig;
-import com.elim.server.gas_monitoring.dto.response.ua58kfg.UA58KFGHealthResponseDto;
+import com.elim.server.gas_monitoring.dto.response.health.HealthResponseDto;
 import com.elim.server.gas_monitoring.dto.response.ua58kfg.UA58KFGMeasurementResponseDto;
+import com.elim.server.gas_monitoring.dto.response.ua58lel.UA58LELMeasurementResponseDto;
 import com.elim.server.gas_monitoring.exception.ErrorCode;
 import com.elim.server.gas_monitoring.exception.exceptions.IntegrationException;
 import com.fazecast.jSerialComm.SerialPort;
@@ -10,19 +11,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class UA58KFGSensorService {
+public class SensorService {
 
 
 
     /**
      * 센서 연결 상태 확인
      * */
-    public UA58KFGHealthResponseDto checkStatus(String port) {
+    public HealthResponseDto checkStatus(String port) {
         SerialPort comPort = initPort(port); // 포트 관련 기본 설정
 
         if (!comPort.openPort()) { // 포트 연결 확인
@@ -35,9 +37,9 @@ public class UA58KFGSensorService {
             int bytesRead = readResponse(comPort, new byte[1024]); // 응답 읽기
 
             if (bytesRead > 0) {
-                return UA58KFGHealthResponseDto.of(true);
+                return HealthResponseDto.of(true);
             } else {
-                return UA58KFGHealthResponseDto.of(false);
+                return HealthResponseDto.of(false);
             }
         } catch (Exception e) {
             throw new IntegrationException(ErrorCode.SENSOR_READ_FAILED, "sensor.read.failed");
@@ -66,9 +68,9 @@ public class UA58KFGSensorService {
 
     
     /**
-     * 센서 측정값 조회
+     * 센서 측정값 조회 (KFG)
      * */
-    public UA58KFGMeasurementResponseDto readValues(String port) {
+    public UA58KFGMeasurementResponseDto readValuesFromKFG(String port) {
         SerialPort comPort = initPort(port); // 포트 관련 기본 설정
 
         if (!comPort.openPort()) { // 포트 연결 확인
@@ -93,6 +95,43 @@ public class UA58KFGSensorService {
                 String[] parts = response.split(",");
 
                 return UA58KFGMeasurementResponseDto.of(parts);
+            } else {
+                throw new IntegrationException(ErrorCode.SENSOR_READ_FAILED, "sensor.read.failed");
+            }
+        } finally {
+            comPort.closePort();
+        }
+    }
+
+
+    /**
+     * 센서 측정값 조회(LEL)
+     * */
+    public UA58LELMeasurementResponseDto readValuesFromLEL(String port) {
+        SerialPort comPort = initPort(port); // 포트 관련 기본 설정
+
+        if (!comPort.openPort()) { // 포트 연결 확인
+            throw new IntegrationException(ErrorCode.PORT_OPEN_FAILED, "sensor.port.open.failed", List.of(port));
+        }
+
+        try {
+            sendCommand(comPort, "ATCQ\r\n"); // 명령 전송
+
+            byte[] buffer = new byte[1024];
+            int bytesRead = readResponse(comPort, buffer); // 응답 읽기
+
+            if (bytesRead > 0) {
+                String response = new String(buffer, 0, bytesRead);
+
+                // "ATCQ " 접두사 제거
+                if (response.startsWith("ATCQ")) {
+                    response = response.substring(5).trim(); // "0,20.37,0,1390"
+                }
+
+                // CSV 파싱
+                String[] parts = response.split(",");
+                System.out.println(Arrays.toString(parts));
+                return null;
             } else {
                 throw new IntegrationException(ErrorCode.SENSOR_READ_FAILED, "sensor.read.failed");
             }

@@ -47,6 +47,10 @@ dependencies {
 	//
 	implementation 'com.fazecast:jSerialComm:2.9.3'
 
+	// 웹 소켓 + STOMP
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
 
 }
 

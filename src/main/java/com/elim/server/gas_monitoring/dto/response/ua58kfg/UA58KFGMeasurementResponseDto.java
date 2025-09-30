@@ -31,4 +31,14 @@ public class UA58KFGMeasurementResponseDto {
                 .co2(parts[3])
                 .build();
     }
+
+    @Override
+    public String toString() {
+        return "UA58KFGMeasurementResponseDto{" +
+                "co='" + co + '\'' +
+                ", o2='" + o2 + '\'' +
+                ", h2s='" + h2s + '\'' +
+                ", co2='" + co2 + '\'' +
+                '}';
+    }
 }
