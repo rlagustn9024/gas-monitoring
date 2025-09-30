@@ -86,13 +86,11 @@ public class SensorService {
             if (bytesRead > 0) {
                 String response = new String(buffer, 0, bytesRead);
 
-                // "ATCQ " 접두사 제거
-                if (response.startsWith("ATCQ")) {
+                if (response.startsWith("ATCQ")) { // "ATCQ " 접두사 제거
                     response = response.substring(5).trim(); // "0,20.37,0,1390"
                 }
 
-                // CSV 파싱
-                String[] parts = response.split(",");
+                String[] parts = response.split(","); // CSV 파싱
 
                 return UA58KFGMeasurementResponseDto.of(parts);
             } else {
@@ -123,15 +121,12 @@ public class SensorService {
             if (bytesRead > 0) {
                 String response = new String(buffer, 0, bytesRead);
 
-                // "ATCQ " 접두사 제거
-                if (response.startsWith("ATCQ")) {
+                if (response.startsWith("ATCQ")) { // "ATCQ " 접두사 제거
                     response = response.substring(5).trim(); // "0,20.37,0,1390"
                 }
 
-                // CSV 파싱
-                String[] parts = response.split(",");
-                System.out.println(Arrays.toString(parts));
-                return null;
+                String[] parts = response.split(","); // CSV 파싱
+                return UA58LELMeasurementResponseDto.of(parts);
             } else {
                 throw new IntegrationException(ErrorCode.SENSOR_READ_FAILED, "sensor.read.failed");
             }
