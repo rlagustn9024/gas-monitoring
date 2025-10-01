@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Schema(description = "**UA58KFG 센서 Health 응답 DTO**")
+@Schema(description = "**UA58KFGU 센서 Health 응답 DTO**")
 public class HealthResponseDto {
 
     @Schema(description = "연결 상태", example = "true")

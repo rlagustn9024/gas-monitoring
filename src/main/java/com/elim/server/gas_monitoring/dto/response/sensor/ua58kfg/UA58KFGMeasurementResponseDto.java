@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Schema(description = "**UA58KFG 센서 측정값 응답 DTO**")
+@Schema(description = "**UA58KFGU 센서 측정값 응답 DTO**")
 public class UA58KFGMeasurementResponseDto {
 
     @Schema(description = "CO 측정값(ppm)", example = "3")

@@ -13,15 +13,22 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class UA58KFG extends SoftDeletableEntity {
+public class UA58KFGU extends SoftDeletableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ua58kfg_id")
+    @Column(name = "ua58kfgu_id")
     private Long id;
 
+    @Column(nullable = false, length = 50)
+    private String model; // 모델 명
+
+    @Column(nullable = false, length = 50)
+    private String serialNumber; // 기기 고유 번호
+
+    // 측정값
     private String CO; // 일산화탄소 농도(ppm)
     private String O2; // 산소 농도(%)
-    private String H2S; //
-    private String CO2;
+    private String H2S; // 황화수소 농도(ppm)
+    private String CO2; // 이산화탄소 농도 (ppm)
 }

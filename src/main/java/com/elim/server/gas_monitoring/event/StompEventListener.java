@@ -25,7 +25,7 @@ public class StompEventListener {
     private final SimpMessagingTemplate messagingTemplate;
     private final SensorService sensorService;
 
-    // 세션 ID -> (sensorName:port) 매핑 (예: "UA58KFG:COM3")
+    // 세션 ID -> (sensorName:port) 매핑 (예: "UA58KFGU:COM3")
     private final Map<String, String> sessionSubscriptions = new ConcurrentHashMap<>();
 
     // subscriptionKey -> 스케줄러 매핑
@@ -34,7 +34,7 @@ public class StompEventListener {
 
     /**
      * 클라이언트가 STOMP 구독을 시도할 때 호출
-     * <p>기대 destination 형식: /topic/sensor/{sensorName}/{port}  예) /topic/sensor/UA58KFG/COM3 </p>
+     * <p>기대 destination 형식: /topic/sensor/{sensorName}/{port}  예) /topic/sensor/UA58KFGU/COM3 </p>
      */
     @EventListener
     public void handleSessionSubscribeEvent(SessionSubscribeEvent event) {
@@ -45,10 +45,10 @@ public class StompEventListener {
         // sensor 토픽만 처리
         if (destination != null && destination.startsWith("/topic/sensor/")) {
 
-            // /topic/sensor/UA58KFG/COM3 → ["", "topic", "sensor", "UA58KFG", "COM3"]
+            // /topic/sensor/UA58KFGU/COM3 → ["", "topic", "sensor", "UA58KFGU", "COM3"]
             String[] parts = destination.split("/");
 
-            String sensorName = parts[3]; // 센서 종류 추출, 예) UA58KFG
+            String sensorName = parts[3]; // 센서 종류 추출, 예) UA58KFGU
             String port = parts[4]; // 포트 번호 추출, 예) COM3
 
             // 센서명 검증 (whitelist)
@@ -58,7 +58,7 @@ public class StompEventListener {
             }
 
             // 세션 ↔ 구독키(센서명:포트) 매핑 저장
-            String key = sensorName + ":" + port; // 예: UA58KFG:COM3
+            String key = sensorName + ":" + port; // 예: UA58KFGU:COM3
             sessionSubscriptions.put(sessionId, key);
 
             // 현재 동일 key(=같은 센서/포트)를 구독 중인 세션 수 집계
@@ -81,7 +81,7 @@ public class StompEventListener {
 
                             Object dto;
                             switch (sensorName) {
-                                case "UA58KFG" -> dto = sensorService.readValuesFromKFG(port);
+                                case "UA58KFGU" -> dto = sensorService.readValuesFromKFG(port);
                                 case "UA58LEL" -> dto = sensorService.readValuesFromLEL(port);
                                 default -> dto = "지원하지 않는 센서명입니다: " + sensorName;
                             }
