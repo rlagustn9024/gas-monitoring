@@ -3,6 +3,7 @@ package com.elim.server.gas_monitoring.domain.sensor.alarm;
 import com.elim.server.gas_monitoring.domain.common.entity.SoftDeletableEntity;
 import com.elim.server.gas_monitoring.domain.enums.sensor.AlarmLevel;
 import com.elim.server.gas_monitoring.domain.enums.sensor.AlarmStatus;
+import com.elim.server.gas_monitoring.infra.SnowflakeId;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -18,16 +19,18 @@ import lombok.experimental.SuperBuilder;
 public class AlarmEvent extends SoftDeletableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SnowflakeId
     @Column(name = "alarm_event_id")
     private Long id;
 
     @Column(nullable = false, length = 20)
-    private String portName; // 어떤 포트에서 발생했는지
+    private String port; // 어떤 포트에서 발생했는지 (예: COM7)
 
-    private String model; // 모델 명
+    @Column(nullable = false, length = 30)
+    private String modelName; // 모델 명(예: UA58-KFG-U)
 
-    private String serialNumber; // 기기 고유 번호
+    @Column(nullable = false, length = 30)
+    private String serialNumber; // 기기 고유 번호 (예: 25090199)
 
     @Column(nullable = false, length = 20)
     private String metric; // 측정 대상 (예: CO, O2, H2S, CO2)
