@@ -154,11 +154,11 @@ public class SensorService {
 
             try {
                 sendCommand(comPort, "ATCVER\r\n"); // 명령 전송
-                String modelName = readAndParse(comPort, this::parseATCVERResponse); // 모델명 추출
+                String modelName = sendAndReadReliable(comPort, "ATCVER\r\n", this::parseATCVERResponse); // 모델명 추출
                 System.out.println("modelName = " + modelName);
 
                 sendCommand(comPort, "ATCMODEL\r\n");
-                String serialNumber  = readAndParse(comPort, this::parseATCMODELResponse); // 모델명 추출
+                String serialNumber  = sendAndReadReliable(comPort, "ATCMODEL\r\n", this::parseATCMODELResponse); // 모델명 추출
                 System.out.println("serialNumber = " + serialNumber);
 
                 dtoList.add(SensorPortResponseDto.of(port, modelName, serialNumber));
@@ -168,6 +168,46 @@ public class SensorService {
         }
 
         return SensorPortListResponseDto.of(dtoList);
+    }
+
+    private String sendAndReadReliable(SerialPort port, String command, Function<String, String> parser) {
+        byte[] buffer = new byte[1024];
+
+        try {
+            // 남아있는 버퍼 비우기
+            while (port.bytesAvailable() > 0) {
+                port.readBytes(buffer, buffer.length);
+            }
+
+            // 더미 요청 → 응답 무시
+            sendCommand(port, command);
+            waitForResponse(port, buffer, 30); // 최대 50ms만 대기해서 버림
+
+            // 두 번째 실제 요청
+            sendCommand(port, command);
+            int bytesRead = waitForResponse(port, buffer, 300); // 최대 300ms 대기 (응답 오면 즉시 리턴)
+            if (bytesRead > 0) {
+                String raw = new String(buffer, 0, bytesRead).trim();
+                return parser.apply(raw);
+            }
+
+            throw new IntegrationException(ErrorCode.SENSOR_READ_FAILED, "센서 응답 없음: " + command);
+        } catch (Exception e) {
+            throw new IntegrationException(ErrorCode.SENSOR_READ_FAILED, "센서 명령 실패: " + command, e);
+        }
+    }
+
+    /* 응답이 올 때까지 polling 하면서 대기 */
+    private int waitForResponse(SerialPort port, byte[] buffer, int timeoutMs) throws Exception {
+        long deadline = System.currentTimeMillis() + timeoutMs;
+        while (System.currentTimeMillis() < deadline) {
+            int bytesRead = port.readBytes(buffer, buffer.length);
+            if (bytesRead > 0) {
+                return bytesRead; // 데이터 오면 바로 리턴 → sleep 없음
+            }
+            Thread.sleep(5); // 너무 바쁘게 돌지 않도록 5ms만 쉼
+        }
+        return 0; // 타임아웃
     }
 
     private String readAndParse(SerialPort comPort, Function<String, String> parser) {
