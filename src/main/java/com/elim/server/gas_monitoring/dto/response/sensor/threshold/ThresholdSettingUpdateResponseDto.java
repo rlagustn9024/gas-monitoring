@@ -1,5 +1,6 @@
 package com.elim.server.gas_monitoring.dto.response.sensor.threshold;
 
+import com.elim.server.gas_monitoring.domain.sensor.threshold.ThresholdSetting;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -82,4 +83,36 @@ public class ThresholdSettingUpdateResponseDto {
 
     @Schema(description = "LEL 위험범위 최대값(초과)", example = "25")
     private Double lelCriticalMax;
+
+
+    public static ThresholdSettingUpdateResponseDto of(ThresholdSetting thresholdSetting) {
+        return ThresholdSettingUpdateResponseDto.builder()
+                .model(thresholdSetting.getModel())
+                .port(thresholdSetting.getPort())
+                .serialNumber(thresholdSetting.getSerialNumber())
+
+                .coWarningMin(thresholdSetting.getCoWarningMin())
+                .coWarningMax(thresholdSetting.getCoWarningMax())
+                .coCriticalMax(thresholdSetting.getCoCriticalMax())
+
+                .o2WarningMin1(thresholdSetting.getO2WarningMin1())
+                .o2WarningMin2(thresholdSetting.getO2WarningMin2())
+                .o2WarningMax1(thresholdSetting.getO2WarningMax1())
+                .o2WarningMax2(thresholdSetting.getO2WarningMax2())
+                .o2CriticalMin(thresholdSetting.getO2CriticalMin())
+                .o2CriticalMax(thresholdSetting.getO2CriticalMax())
+
+                .h2sWarningMin(thresholdSetting.getH2sWarningMin())
+                .h2sWarningMax(thresholdSetting.getH2sWarningMax())
+                .h2sCriticalMax(thresholdSetting.getH2sCriticalMax())
+
+                .co2WarningMin(thresholdSetting.getCo2WarningMin())
+                .co2WarningMax(thresholdSetting.getCo2WarningMax())
+                .co2CriticalMax(thresholdSetting.getCo2CriticalMax())
+
+                .lelWarningMin(thresholdSetting.getLelWarningMin())
+                .lelWarningMax(thresholdSetting.getLelWarningMax())
+                .lelCriticalMax(thresholdSetting.getLelCriticalMax())
+                .build();
+    }
 }

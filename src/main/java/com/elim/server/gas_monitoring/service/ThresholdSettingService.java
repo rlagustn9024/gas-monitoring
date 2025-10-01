@@ -1,5 +1,6 @@
 package com.elim.server.gas_monitoring.service;
 
+import com.elim.server.gas_monitoring.common.cache.CacheDebugService;
 import com.elim.server.gas_monitoring.domain.sensor.threshold.ThresholdSetting;
 import com.elim.server.gas_monitoring.dto.request.threshold.ThresholdSettingUpdateRequestDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.threshold.ThresholdSettingInitResponseDto;
@@ -9,6 +10,7 @@ import com.elim.server.gas_monitoring.repository.ThresholdSettingRepository;
 import com.elim.server.gas_monitoring.service.reader.ThresholdSettingReader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,7 @@ public class ThresholdSettingService {
 
     private final ThresholdSettingReader thresholdSettingReader;
     private final ThresholdSettingRepository thresholdSettingRepository;
+    private final CacheDebugService cacheDebugService;
 
 
     /**
@@ -63,7 +66,12 @@ public class ThresholdSettingService {
     /**
      * 사용자 요청 기반으로 ThresholdSetting 수정. Audit으로 로그 남김
      * */
-    public ThresholdSettingUpdateResponseDto updateThresholdSetting(ThresholdSettingUpdateRequestDto dto) {
-        return null;
+    public ThresholdSettingUpdateResponseDto updateThresholdSetting(
+            ThresholdSettingUpdateRequestDto dto
+    ) {
+        ThresholdSetting thresholdSetting =
+                getThresholdSetting(dto.getModel(), dto.getPort(), dto.getSerialNumber());
+        thresholdSetting.update(dto);
+        return ThresholdSettingUpdateResponseDto.of(thresholdSetting);
     }
 }

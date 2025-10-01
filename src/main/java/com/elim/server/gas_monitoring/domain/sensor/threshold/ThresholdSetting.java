@@ -1,6 +1,7 @@
 package com.elim.server.gas_monitoring.domain.sensor.threshold;
 
 import com.elim.server.gas_monitoring.domain.common.entity.SoftDeletableEntity;
+import com.elim.server.gas_monitoring.dto.request.threshold.ThresholdSettingUpdateRequestDto;
 import com.elim.server.gas_monitoring.infra.SnowflakeId;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -124,5 +125,35 @@ public class ThresholdSetting extends SoftDeletableEntity {
                 .lelWarningMax(25.0)
                 .lelCriticalMax(25.0)
                 .build();
+    }
+
+    public void update(ThresholdSettingUpdateRequestDto dto) {
+        // ========================== CO ==========================
+        this.coWarningMin = dto.getCoWarningMin();
+        this.coWarningMax = dto.getCoWarningMax();
+        this.coCriticalMax = dto.getCoCriticalMax();
+
+        // ========================== O2 ==========================
+        this.o2WarningMin1 = dto.getO2WarningMin1();
+        this.o2WarningMin2 = dto.getO2WarningMin2();
+        this.o2WarningMax1 = dto.getO2WarningMax1();
+        this.o2WarningMax2 = dto.getO2WarningMax2();
+        this.o2CriticalMin = dto.getO2CriticalMin();
+        this.o2CriticalMax = dto.getO2CriticalMax();
+
+        // ========================== H2S ==========================
+        this.h2sWarningMin = dto.getH2sWarningMin();
+        this.h2sWarningMax = dto.getH2sWarningMax();
+        this.h2sCriticalMax = dto.getH2sCriticalMax();
+
+        // ========================== CO2 ==========================
+        this.co2WarningMin = dto.getCo2WarningMin();
+        this.co2WarningMax = dto.getCo2WarningMax();
+        this.co2CriticalMax = dto.getCo2CriticalMax();
+
+        // ========================== LEL ==========================
+        this.lelWarningMin = dto.getLelWarningMin();
+        this.lelWarningMax = dto.getLelWarningMax();
+        this.lelCriticalMax = dto.getLelCriticalMax();
     }
 }

@@ -9,11 +9,8 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public enum CacheNames {
 
-    // 기계설비 현장 페이지 totalCount 캐시
-    MACHINE_PROJECT_TOTAL_COUNT("machineProjectTotalCount"),
-
-    // MemberPermission 페이지 totalCount 캐시
-    MEMBER_PERMISSION_TOTAL_COUNT("memberPermissionTotalCount");
+    // ThresholdSetting 캐시
+    THRESHOLD_SETTINGS("thresholdSettings");
 
     private final String name;
 

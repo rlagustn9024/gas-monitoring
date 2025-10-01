@@ -7,4 +7,11 @@ import java.util.List;
 @Component
 public class CacheKeyGenerator {
 
+    public String generateThresholdSettingKey(String model, String port, String serialNumber) {
+        return String.join("|",
+                model,
+                port,
+                serialNumber
+        );
+    }
 }
