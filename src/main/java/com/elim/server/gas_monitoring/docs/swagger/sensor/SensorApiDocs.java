@@ -3,7 +3,7 @@ package com.elim.server.gas_monitoring.docs.swagger.sensor;
 import com.elim.server.gas_monitoring.dto.common.CommonResponse;
 import com.elim.server.gas_monitoring.dto.response.health.HealthResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.SensorPortListResponseDto;
-import com.elim.server.gas_monitoring.dto.response.sensor.ua58kfg.UA58KFGMeasurementResponseDto;
+import com.elim.server.gas_monitoring.dto.response.sensor.ua58kfg.UA58KFGUMeasurementResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.ua58lel.UA58LELMeasurementResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,7 +39,7 @@ public interface SensorApiDocs {
             """
     )
     @GetMapping("/ua58kfg")
-    ResponseEntity<CommonResponse<UA58KFGMeasurementResponseDto>> readKfgSensorValues(
+    ResponseEntity<CommonResponse<UA58KFGUMeasurementResponseDto>> readKfgSensorValues(
             @Parameter(description = "센서가 연결된 포트 이름(예: COM3)", example = "COM3")
             @RequestParam String port
     );

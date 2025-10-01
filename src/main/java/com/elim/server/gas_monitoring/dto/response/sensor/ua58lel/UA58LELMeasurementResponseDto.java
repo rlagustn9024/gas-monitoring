@@ -1,5 +1,7 @@
 package com.elim.server.gas_monitoring.dto.response.sensor.ua58lel;
 
+import com.elim.server.gas_monitoring.domain.enums.sensor.AlarmLevel;
+import com.elim.server.gas_monitoring.dto.response.sensor.alarm.AlarmResultResponseDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -9,6 +11,9 @@ import lombok.*;
 @AllArgsConstructor
 @Schema(description = "**UA58LEL 센서 측정값 응답 DTO**")
 public class UA58LELMeasurementResponseDto {
+
+    @Schema(description = "알람 관련 정보")
+    private AlarmResultResponseDto alarmResult;
 
     @Schema(description = "LEL 측정값", example = "0.00")
     private String lel;
@@ -22,8 +27,13 @@ public class UA58LELMeasurementResponseDto {
     @Schema(description = "GAS ID", example = "0")
     private String gasId;
 
-    public static UA58LELMeasurementResponseDto of(String[] parts) {
+
+    public static UA58LELMeasurementResponseDto of(
+            AlarmResultResponseDto alarmResult,
+            String[] parts
+    ) {
         return UA58LELMeasurementResponseDto.builder()
+                .alarmResult(alarmResult)
                 .lel(parts[0])
                 .temperature(parts[1])
                 .humidity(parts[2])

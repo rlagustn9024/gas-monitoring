@@ -1,4 +1,4 @@
-package com.elim.server.gas_monitoring.domain.sensor;
+package com.elim.server.gas_monitoring.domain.sensor.alarm;
 
 import com.elim.server.gas_monitoring.domain.common.entity.SoftDeletableEntity;
 import com.elim.server.gas_monitoring.domain.enums.sensor.AlarmLevel;

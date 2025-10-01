@@ -4,7 +4,7 @@ import com.elim.server.gas_monitoring.docs.swagger.sensor.SensorApiDocs;
 import com.elim.server.gas_monitoring.dto.common.CommonResponse;
 import com.elim.server.gas_monitoring.dto.response.health.HealthResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.SensorPortListResponseDto;
-import com.elim.server.gas_monitoring.dto.response.sensor.ua58kfg.UA58KFGMeasurementResponseDto;
+import com.elim.server.gas_monitoring.dto.response.sensor.ua58kfg.UA58KFGUMeasurementResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.ua58lel.UA58LELMeasurementResponseDto;
 import com.elim.server.gas_monitoring.service.SensorService;
 import lombok.RequiredArgsConstructor;
@@ -54,11 +54,11 @@ public class SensorController implements SensorApiDocs {
      *   <li><b>네 번째 값 (CH4)</b> : CO2 농도(ppm)</li>
      * </ul>
      * */
-    @GetMapping("/ua58kfg")
-    public ResponseEntity<CommonResponse<UA58KFGMeasurementResponseDto>> readKfgSensorValues(
+    @GetMapping("/ua58kfgu")
+    public ResponseEntity<CommonResponse<UA58KFGUMeasurementResponseDto>> readKfgSensorValues(
             @RequestParam String port
     ) {
-        UA58KFGMeasurementResponseDto response = sensorService.readValuesFromKFG(port, null, null);
+        UA58KFGUMeasurementResponseDto response = sensorService.readValuesFromKFG(port, null, null);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 

@@ -48,11 +48,17 @@ public class StompEventListener {
             // /topic/sensor/UA58KFGU/COM3/25070073 → ["", "topic", "sensor", "UA58KFGU", "COM3", "25070073"]
             String[] parts = destination.split("/");
 
+            // 최소 길이 검증 (sensorName, port, serialNumber 다 있어야 함)
+            if (parts.length < 6) {
+                log.warn("잘못된 destination 형식: {} (센서명/포트/시리얼 누락)", destination);
+                return;
+            }
+
             String model = parts[3]; // 센서 종류 추출, 예) UA58KFGU
             String port = parts[4]; // 포트 번호 추출, 예) COM3
             String serialNumber = parts[5]; // 시리얼 넘버 추출, 예) 25070073
 
-            // 센서명 검증 (whitelist)
+            // 센서 종류 검증 (whitelist)
             if (!model.matches("UA58KFGU|UA58LEL")) {
                 log.warn("잘못된 센서명 구독 시도: {}", model);
                 return;

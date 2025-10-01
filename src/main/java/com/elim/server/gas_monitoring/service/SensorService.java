@@ -1,10 +1,12 @@
 package com.elim.server.gas_monitoring.service;
 
 import com.elim.server.gas_monitoring.config.SerialPortConfig;
+import com.elim.server.gas_monitoring.domain.enums.sensor.AlarmLevel;
 import com.elim.server.gas_monitoring.dto.response.health.HealthResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.SensorPortListResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.SensorPortResponseDto;
-import com.elim.server.gas_monitoring.dto.response.sensor.ua58kfg.UA58KFGMeasurementResponseDto;
+import com.elim.server.gas_monitoring.dto.response.sensor.alarm.AlarmResultResponseDto;
+import com.elim.server.gas_monitoring.dto.response.sensor.ua58kfg.UA58KFGUMeasurementResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.ua58lel.UA58LELMeasurementResponseDto;
 import com.elim.server.gas_monitoring.exception.ErrorCode;
 import com.elim.server.gas_monitoring.exception.exceptions.IntegrationException;
@@ -77,7 +79,7 @@ public class SensorService {
     /**
      * 센서 측정값 조회 (KFG)
      * */
-    public UA58KFGMeasurementResponseDto readValuesFromKFG(String port, String model, String serialNumber) {
+    public UA58KFGUMeasurementResponseDto readValuesFromKFG(String port, String model, String serialNumber) {
         SerialPort comPort = initPort(port); // 포트 연결 및 기본 설정
 
         try {
@@ -92,7 +94,9 @@ public class SensorService {
 
                 String[] parts = response.split(","); // CSV 파싱
 
-                return UA58KFGMeasurementResponseDto.of(parts);
+                // 위험 수치 확인
+                AlarmResultResponseDto alarmResultResponseDto = determineUA58KFGUAlarmLevel(parts);
+                return UA58KFGUMeasurementResponseDto.of(alarmResultResponseDto, parts);
             } else {
                 throw new IntegrationException(ErrorCode.SENSOR_READ_FAILED, "sensor.read.failed");
             }
@@ -106,6 +110,44 @@ public class SensorService {
             response = response.substring(5).trim(); // "0,20.37,0,1390"
         }
         return response;
+    }
+
+
+    private AlarmResultResponseDto determineUA58KFGUAlarmLevel(String[] parts) {
+        double co = Double.parseDouble(parts[0]);
+        double o2 = Double.parseDouble(parts[1]);
+        double h2s = Double.parseDouble(parts[2]);
+        double co2 = Double.parseDouble(parts[3]);
+        System.out.println("co = " + co);
+        System.out.println("o2 = " + o2);
+        System.out.println("h2s = " + h2s);
+        System.out.println("co2 = " + co2);
+
+        List<String> criticalMessages = new ArrayList<>();
+        List<String> warningMessages = new ArrayList<>();
+
+        // CRITICAL 체크
+        if (co > 200) criticalMessages.add("CO 농도 초과 (" + co + " ppm)");
+        if (o2 < 19.5) criticalMessages.add("산소 부족 (" + o2 + " %)");
+        if (o2 > 23.5) criticalMessages.add("산소 과다 (" + o2 + " %)");
+        if (h2s > 50) criticalMessages.add("H₂S 농도 초과 (" + h2s + " ppm)");
+        if (co2 > 5000) criticalMessages.add("CO₂ 농도 초과 (" + co2 + " ppm)");
+
+        // WARNING 체크
+        if (co >= 30 && co <= 200) warningMessages.add("CO 경고 범위 (" + co + " ppm)");
+        if (o2 >= 19.5 && o2 <= 20) warningMessages.add("산소 부족 경계치 (" + o2 + " %)");
+        if (o2 >= 22 && o2 <= 23.5) warningMessages.add("산소 과다 경계치 (" + o2 + " %)");
+        if (h2s >= 5 && h2s <= 50) warningMessages.add("H₂S 경고 범위 (" + h2s + " ppm)");
+        if (co2 >= 1500 && co2 <= 5000) warningMessages.add("CO₂ 경고 범위 (" + co2 + " ppm)");
+
+        // 우선순위 결정 (CRITICAL > WARNING > NORMAL)
+        if (!criticalMessages.isEmpty()) {
+            return AlarmResultResponseDto.of(AlarmLevel.CRITICAL, criticalMessages);
+        } else if (!warningMessages.isEmpty()) {
+            return AlarmResultResponseDto.of(AlarmLevel.WARNING, warningMessages);
+        } else {
+            return AlarmResultResponseDto.normal();
+        }
     }
 
 
@@ -130,7 +172,8 @@ public class SensorService {
                 response = removeATCQPrefix(response); // 접두사 제거
 
                 String[] parts = response.split(","); // CSV 파싱
-                return UA58LELMeasurementResponseDto.of(parts);
+                AlarmResultResponseDto alarmResultResponseDto = null;
+                return UA58LELMeasurementResponseDto.of(alarmResultResponseDto, parts);
             } else {
                 throw new IntegrationException(ErrorCode.SENSOR_READ_FAILED, "sensor.read.failed");
             }
@@ -138,6 +181,7 @@ public class SensorService {
             comPort.closePort();
         }
     }
+
 
     
     /**
