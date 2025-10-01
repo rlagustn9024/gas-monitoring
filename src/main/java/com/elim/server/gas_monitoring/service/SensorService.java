@@ -182,7 +182,7 @@ public class SensorService {
                 .toList();
     }
 
-    /* ATCVER UA58-KFG-U_7v3 -> UA58-KFG로 파싱 */
+    /* ATCVER UA58-KFG-U_7v3 -> UA58-KFG-U로 파싱 */
     private String parseATCVERResponse(String response) {
         if (response.startsWith("ATCVER")) { // ATCVER 접두사 제거
             response = response.substring(7).trim(); // UA58-LEL_0v7
