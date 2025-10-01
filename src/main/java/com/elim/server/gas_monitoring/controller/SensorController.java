@@ -3,7 +3,7 @@ package com.elim.server.gas_monitoring.controller;
 import com.elim.server.gas_monitoring.docs.swagger.sensor.SensorApiDocs;
 import com.elim.server.gas_monitoring.dto.common.CommonResponse;
 import com.elim.server.gas_monitoring.dto.response.health.HealthResponseDto;
-import com.elim.server.gas_monitoring.dto.response.sensor.SensorPortResponseDto;
+import com.elim.server.gas_monitoring.dto.response.sensor.SensorPortListResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.ua58kfg.UA58KFGMeasurementResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.ua58lel.UA58LELMeasurementResponseDto;
 import com.elim.server.gas_monitoring.service.SensorService;
@@ -110,8 +110,8 @@ public class SensorController implements SensorApiDocs {
      * @return 전체 포트와 모델명 매핑 정보
      */
     @GetMapping("/mappings")
-    public ResponseEntity<CommonResponse<SensorPortResponseDto>> getAllMappings() {
-        SensorPortResponseDto response = sensorService.getAllMappings();
+    public ResponseEntity<CommonResponse<SensorPortListResponseDto>> getAllMappings() {
+        SensorPortListResponseDto response = sensorService.getAllMappings();
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 }

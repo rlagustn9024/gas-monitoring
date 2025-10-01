@@ -2,6 +2,7 @@ package com.elim.server.gas_monitoring.service;
 
 import com.elim.server.gas_monitoring.config.SerialPortConfig;
 import com.elim.server.gas_monitoring.dto.response.health.HealthResponseDto;
+import com.elim.server.gas_monitoring.dto.response.sensor.SensorPortListResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.SensorPortResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.ua58kfg.UA58KFGMeasurementResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.ua58lel.UA58LELMeasurementResponseDto;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -137,37 +139,47 @@ public class SensorService {
     /**
      * 전체 포트, 모델명 조회
      * */
-    public SensorPortResponseDto getAllMappings() {
+    public SensorPortListResponseDto getAllMappings() {
         SerialPort[] ports = SerialPort.getCommPorts(); // 전체 포트 조회
 
         List<SerialPort> usbPorts = extractUsbPorts(ports); // 전체 포트 중에 usb 포트만 추출
 
         List<String> portNames = extractUsbPortNames(usbPorts); // usb 포트 이름 추출
 
-        Map<String , String> sensorMap = new LinkedHashMap<>(); // key: portName, value: Model
+        // 응답 정보 넣을 DTO 리스트
+        List<SensorPortResponseDto> dtoList = new ArrayList<>();
 
         for (String port : portNames) {
             SerialPort comPort = initPort(port); // 포트 연결 및 기본 설정
 
             try {
                 sendCommand(comPort, "ATCVER\r\n"); // 명령 전송
+                String modelName = readAndParse(comPort, this::parseATCVERResponse); // 모델명 추출
+                System.out.println("modelName = " + modelName);
 
-                byte[] buffer = new byte[1024];
-                int bytesRead = readResponse(comPort, buffer); // 응답 읽기
+                sendCommand(comPort, "ATCMODEL\r\n");
+                String serialNumber  = readAndParse(comPort, this::parseATCMODELResponse); // 모델명 추출
+                System.out.println("serialNumber = " + serialNumber);
 
-                if (bytesRead > 0) {
-                    String response = new String(buffer, 0, bytesRead);
-                    response = parseATCVERResponse(response); // 파싱
-                    sensorMap.put(port, response);
-                } else {
-                    throw new IntegrationException(ErrorCode.SENSOR_READ_FAILED, "sensor.read.failed");
-                }
+                dtoList.add(SensorPortResponseDto.of(port, modelName, serialNumber));
             } finally {
                 comPort.closePort();
             }
         }
 
-        return SensorPortResponseDto.of(sensorMap);
+        return SensorPortListResponseDto.of(dtoList);
+    }
+
+    private String readAndParse(SerialPort comPort, Function<String, String> parser) {
+        byte[] buffer = new byte[1024];
+        int bytesRead = readResponse(comPort, buffer); // 응답 읽기
+
+        if (bytesRead > 0) {
+            String raw = new String(buffer, 0, bytesRead);
+            return parser.apply(raw.trim()); // 파싱
+        } else {
+            throw new IntegrationException(ErrorCode.SENSOR_READ_FAILED, "sensor.read.failed");
+        }
     }
 
     private List<String> extractUsbPortNames(List<SerialPort> usbPorts) {
@@ -186,6 +198,21 @@ public class SensorService {
     private String parseATCVERResponse(String response) {
         if (response.startsWith("ATCVER")) { // ATCVER 접두사 제거
             response = response.substring(7).trim(); // UA58-LEL_0v7
+        }
+
+        // _ 이후 제거
+        int underscoreIndex = response.indexOf('_');
+        if (underscoreIndex > 0) {
+            response = response.substring(0, underscoreIndex);
+        }
+
+        return response;
+    }
+
+    /* ATCVER UA58-KFG-U_7v3 -> UA58-KFG-U로 파싱 */
+    private String parseATCMODELResponse(String response) {
+        if (response.startsWith("ATCMODEL")) { // ATCVER 접두사 제거
+            response = response.substring(9).trim(); //
         }
 
         // _ 이후 제거

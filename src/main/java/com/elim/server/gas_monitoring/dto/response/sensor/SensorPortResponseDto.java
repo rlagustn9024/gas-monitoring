@@ -3,21 +3,27 @@ package com.elim.server.gas_monitoring.dto.response.sensor;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import java.util.Map;
-
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Schema(description = "**전체 COM 포트 응답 DTO**")
+@Schema(description = "개별 센서 포트 정보 DTO")
 public class SensorPortResponseDto {
 
-    @Schema(description = "포트명과 센서 모델명의 매핑 정보", example = "{COM3: UA58-KFG-U}")
-    private Map<String, String> sensorMap;
+    @Schema(description = "포트명", example = "COM3")
+    private String portName;
 
-    public static SensorPortResponseDto of(Map<String, String> sensorMap) {
+    @Schema(description = "센서 모델명", example = "UA58-KFG-U")
+    private String modelName;
+
+    @Schema(description = "센서 시리얼 번호", example = "SN12345678")
+    private String serialNumber;
+
+    public static SensorPortResponseDto of(String portName, String modelName, String serialNumber) {
         return SensorPortResponseDto.builder()
-                .sensorMap(sensorMap)
+                .portName(portName)
+                .modelName(modelName)
+                .serialNumber(serialNumber)
                 .build();
     }
 }

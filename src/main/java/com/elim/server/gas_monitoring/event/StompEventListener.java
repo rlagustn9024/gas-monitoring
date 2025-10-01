@@ -52,7 +52,7 @@ public class StompEventListener {
             String port = parts[4]; // 포트 번호 추출, 예) COM3
 
             // 센서명 검증 (whitelist)
-            if (!sensorName.matches("UA58KFG|UA58LEL")) {
+            if (!sensorName.matches("UA58KFGU|UA58LEL")) {
                 log.warn("잘못된 센서명 구독 시도: {}", sensorName);
                 return;
             }

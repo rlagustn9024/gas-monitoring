@@ -21,7 +21,7 @@ public class UA58KFGU extends SoftDeletableEntity {
     private Long id;
 
     @Column(nullable = false, length = 50)
-    private String model; // 모델 명
+    private String modelName; // 모델 명
 
     @Column(nullable = false, length = 50)
     private String serialNumber; // 기기 고유 번호

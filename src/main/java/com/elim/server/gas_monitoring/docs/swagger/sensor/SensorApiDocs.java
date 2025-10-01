@@ -2,7 +2,7 @@ package com.elim.server.gas_monitoring.docs.swagger.sensor;
 
 import com.elim.server.gas_monitoring.dto.common.CommonResponse;
 import com.elim.server.gas_monitoring.dto.response.health.HealthResponseDto;
-import com.elim.server.gas_monitoring.dto.response.sensor.SensorPortResponseDto;
+import com.elim.server.gas_monitoring.dto.response.sensor.SensorPortListResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.ua58kfg.UA58KFGMeasurementResponseDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.ua58lel.UA58LELMeasurementResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -77,5 +77,5 @@ public interface SensorApiDocs {
             """
     )
     @GetMapping("/mappings")
-    ResponseEntity<CommonResponse<SensorPortResponseDto>> getAllMappings();
+    ResponseEntity<CommonResponse<SensorPortListResponseDto>> getAllMappings();
 }
