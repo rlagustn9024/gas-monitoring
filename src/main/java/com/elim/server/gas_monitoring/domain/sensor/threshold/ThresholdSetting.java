@@ -1,4 +1,4 @@
-package com.elim.server.gas_monitoring.domain.sensor.alarm;
+package com.elim.server.gas_monitoring.domain.sensor.threshold;
 
 import com.elim.server.gas_monitoring.domain.common.entity.SoftDeletableEntity;
 import com.elim.server.gas_monitoring.infra.SnowflakeId;
@@ -86,4 +86,41 @@ public class ThresholdSetting extends SoftDeletableEntity {
 
     // 위험 범위 (예: 25 초과)
     private Double lelCriticalMax; // 예: 25
+
+
+    public static ThresholdSetting of(String port, String model, String serialNumber) {
+        return ThresholdSetting.builder()
+                .port(port)
+                .model(model)
+                .serialNumber(serialNumber)
+
+                // CO
+                .coWarningMin(30.0)
+                .coWarningMax(200.0)
+                .coCriticalMax(200.0)
+
+                // O2
+                .o2WarningMin1(19.5)
+                .o2WarningMin2(20.0)
+                .o2WarningMax1(22.0)
+                .o2WarningMax2(23.5)
+                .o2CriticalMin(19.5)
+                .o2CriticalMax(23.5)
+
+                // H2S
+                .h2sWarningMin(5.0)
+                .h2sWarningMax(50.0)
+                .h2sCriticalMax(50.0)
+
+                // CO2
+                .co2WarningMin(1500.0)
+                .co2WarningMax(5000.0)
+                .co2CriticalMax(5000.0)
+
+                // LEL
+                .lelWarningMin(10.0)
+                .lelWarningMax(25.0)
+                .lelCriticalMax(25.0)
+                .build();
+    }
 }
