@@ -5,10 +5,7 @@ import com.elim.server.gas_monitoring.dto.response.sensor.threshold.ThresholdSet
 import com.elim.server.gas_monitoring.service.ThresholdSettingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,5 +24,15 @@ public class ThresholdSettingController {
         ThresholdSettingInitResponseDto response =
                 thresholdSettingService.initThresholdSettings(port, model, serialNumber);
         return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<CommonResponse<Void>> deleteThresholdSetting(
+            @RequestParam String port,
+            @RequestParam String model,
+            @RequestParam String serialNumber
+    ) {
+        thresholdSettingService.deleteThresholdSetting(port, model, serialNumber);
+        return ResponseEntity.ok(CommonResponse.success());
     }
 }

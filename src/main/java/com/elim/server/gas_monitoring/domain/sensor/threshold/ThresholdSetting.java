@@ -11,13 +11,13 @@ import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
-@Table(
-        name = "threshold_setting",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_threshold_setting_model_serial_number",
-                columnNames = {"model", "serial_number"})
-        }
-)
+//@Table(
+//        name = "threshold_setting",
+//        uniqueConstraints = {
+//                @UniqueConstraint(name = "uk_threshold_setting_port_model_serial_number",
+//                columnNames = {"port", "model", "serial_number"})
+//        }
+//)
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
