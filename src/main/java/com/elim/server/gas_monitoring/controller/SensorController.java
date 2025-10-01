@@ -3,8 +3,9 @@ package com.elim.server.gas_monitoring.controller;
 import com.elim.server.gas_monitoring.docs.swagger.sensor.SensorApiDocs;
 import com.elim.server.gas_monitoring.dto.common.CommonResponse;
 import com.elim.server.gas_monitoring.dto.response.health.HealthResponseDto;
-import com.elim.server.gas_monitoring.dto.response.ua58kfg.UA58KFGMeasurementResponseDto;
-import com.elim.server.gas_monitoring.dto.response.ua58lel.UA58LELMeasurementResponseDto;
+import com.elim.server.gas_monitoring.dto.response.sensor.SensorPortResponseDto;
+import com.elim.server.gas_monitoring.dto.response.sensor.ua58kfg.UA58KFGMeasurementResponseDto;
+import com.elim.server.gas_monitoring.dto.response.sensor.ua58lel.UA58LELMeasurementResponseDto;
 import com.elim.server.gas_monitoring.service.SensorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -86,6 +87,31 @@ public class SensorController implements SensorApiDocs {
             @RequestParam String port
     ) {
         UA58LELMeasurementResponseDto response = sensorService.readValuesFromLEL(port);
+        return ResponseEntity.ok(CommonResponse.success(response));
+    }
+
+
+    /**
+     * [전체 COM 포트 및 센서 모델명 조회 API]
+     *
+     * <p>현재 시스템에 연결된 모든 USB Serial 포트를 스캔하고, 각 포트에 대해
+     * <code>ATCVER</code> 명령을 전송하여 센서 모델명을 조회합니다.</p>
+     *
+     * <p>응답은 <b>포트명 → 모델명</b> 매핑 형태의 JSON 으로 반환됩니다.</p>
+     *
+     * <pre>
+     * 예시 응답:
+     * {
+     *   "COM3": "UA58-LEL",
+     *   "COM7": "UA58-KFG-U"
+     * }
+     * </pre>
+     *
+     * @return 전체 포트와 모델명 매핑 정보
+     */
+    @GetMapping("/mappings")
+    public ResponseEntity<CommonResponse<SensorPortResponseDto>> getAllMappings() {
+        SensorPortResponseDto response = sensorService.getAllMappings();
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 }

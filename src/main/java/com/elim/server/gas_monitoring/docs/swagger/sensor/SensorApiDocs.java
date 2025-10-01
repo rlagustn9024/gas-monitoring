@@ -2,8 +2,9 @@ package com.elim.server.gas_monitoring.docs.swagger.sensor;
 
 import com.elim.server.gas_monitoring.dto.common.CommonResponse;
 import com.elim.server.gas_monitoring.dto.response.health.HealthResponseDto;
-import com.elim.server.gas_monitoring.dto.response.ua58kfg.UA58KFGMeasurementResponseDto;
-import com.elim.server.gas_monitoring.dto.response.ua58lel.UA58LELMeasurementResponseDto;
+import com.elim.server.gas_monitoring.dto.response.sensor.SensorPortResponseDto;
+import com.elim.server.gas_monitoring.dto.response.sensor.ua58kfg.UA58KFGMeasurementResponseDto;
+import com.elim.server.gas_monitoring.dto.response.sensor.ua58lel.UA58LELMeasurementResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -58,4 +59,23 @@ public interface SensorApiDocs {
             @Parameter(description = "센서가 연결된 포트 이름(예: COM3)", example = "COM3")
             @RequestParam String port
     );
+
+
+    @Operation(
+            summary = "전체 COM 포트 및 센서 모델 조회",
+            description = """
+            현재 시스템에 연결된 모든 USB Serial COM 포트를 스캔하고,
+            각 포트에 `ATCVER` 명령을 전송하여 센서 모델명을 조회합니다.
+
+            응답은 **포트명 → 모델명** 매핑 형태로 반환됩니다.
+
+            예시:
+            {
+              "COM3": "UA58-LEL",
+              "COM7": "UA58-KFG-U"
+            }
+            """
+    )
+    @GetMapping("/mappings")
+    ResponseEntity<CommonResponse<SensorPortResponseDto>> getAllMappings();
 }

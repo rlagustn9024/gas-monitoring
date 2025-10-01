@@ -1,6 +1,5 @@
-package com.elim.server.gas_monitoring.dto.response.ua58lel;
+package com.elim.server.gas_monitoring.dto.response.sensor.ua58lel;
 
-import com.elim.server.gas_monitoring.dto.response.ua58kfg.UA58KFGMeasurementResponseDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
