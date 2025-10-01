@@ -25,7 +25,7 @@ public class StompEventListener {
     private final SimpMessagingTemplate messagingTemplate;
     private final SensorService sensorService;
 
-    // 세션 ID -> (sensorName:port) 매핑 (예: "UA58KFGU:COM3")
+    // 세션 ID -> (sensorName:port) 매핑 (예: "UA58-KFG-U:COM3:25090199")
     private final Map<String, String> sessionSubscriptions = new ConcurrentHashMap<>();
 
     // subscriptionKey -> 스케줄러 매핑
@@ -78,12 +78,12 @@ public class StompEventListener {
     }
 
     private boolean isValidModel(String model) {
-        return model.matches("UA58KFGU|UA58LEL");
+        return model.matches("UA58-KFG-U|UA58-LEL");
     }
 
     private String registerSubscription(String model, String port, String sessionId) {
         // 세션 ↔ 구독키(센서명:포트) 매핑 저장
-        String key = model + ":" + port; // 예: UA58KFGU:COM3
+        String key = model + ":" + port; // 예: UA58-KFG-U:COM3
         sessionSubscriptions.put(sessionId, key);
 
         // 현재 동일 key(=같은 센서/포트)를 구독 중인 세션 수 집계
@@ -113,12 +113,12 @@ public class StompEventListener {
             // 센서 데이터 Object에 담은 후에 응답 보냄
             Object dto;
             switch (model) {
-                case "UA58KFGU" -> dto = sensorService.readValuesFromKFGU(port, model, serialNumber);
-                case "UA58LEL" -> dto = sensorService.readValuesFromLEL(port, model, serialNumber);
+                case "UA58-KFG-U" -> dto = sensorService.readValuesFromKFGU(port, model, serialNumber);
+                case "UA58-LEL" -> dto = sensorService.readValuesFromLEL(port, model, serialNumber);
                 default -> dto = "지원하지 않는 센서명입니다: " + model;
             }
 
-            // 구독자에게 메세지 전달 
+            // 구독자에게 메세지 전달
             messagingTemplate.convertAndSend("/topic/sensor/" + model + "/" + port + "/" + serialNumber, dto);
             log.info("key={}, 구독자수={}, data={}", k, liveSubscribers, dto);
 
@@ -138,6 +138,7 @@ public class StompEventListener {
 
         removeSession(sessionId);
     }
+
 
     /**
      * 특정 세션이 소켓을 끊었을 때 호출
