@@ -15,14 +15,14 @@ public class ThresholdSettingReader {
     private final ThresholdSettingRepository thresholdSettingRepository;
 
 
-    public Optional<ThresholdSetting> fetchActiveByPortAndModelAndSerialNumber(
-            String port,
+    public Optional<ThresholdSetting> fetchActiveByModelAndPortAndSerialNumber(
             String model,
+            String port,
             String serialNumber
     ) {
-        return thresholdSettingRepository.findTop1ByPortAndModelAndSerialNumberAndStatusOrderByCreatedAtDesc(
-                port,
+        return thresholdSettingRepository.findTop1ByModelAndPortAndSerialNumberAndStatusOrderByCreatedAtDesc(
                 model,
+                port,
                 serialNumber,
                 Status.ACTIVE
         );

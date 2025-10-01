@@ -9,9 +9,9 @@ import java.util.Optional;
 public interface ThresholdSettingRepository extends JpaRepository<ThresholdSetting, Long> {
 
 
-    Optional<ThresholdSetting> findTop1ByPortAndModelAndSerialNumberAndStatusOrderByCreatedAtDesc(
-            String port,
+    Optional<ThresholdSetting> findTop1ByModelAndPortAndSerialNumberAndStatusOrderByCreatedAtDesc(
             String model,
+            String port,
             String serialNumber,
             Status status
     );

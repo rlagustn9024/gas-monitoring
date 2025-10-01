@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.envers.Audited;
 
 @Entity
 @Getter
@@ -18,6 +19,7 @@ import lombok.experimental.SuperBuilder;
 //                columnNames = {"port", "model", "serial_number"})
 //        }
 //)
+@Audited
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -28,11 +30,11 @@ public class ThresholdSetting extends SoftDeletableEntity {
     @Column(name = "threshold_setting_id")
     private Long id;
 
-    @Column(nullable = false, length = 20)
-    private String port; // 포트 (예: COM7)
-
     @Column(nullable = false, length = 30)
     private String model; // 모델 명(예: UA58-KFG-U)
+
+    @Column(nullable = false, length = 20)
+    private String port; // 포트 (예: COM7)
 
     @Column(nullable = false, length = 30)
     private String serialNumber; // 기기 고유 번호 (예: 25090199)
@@ -88,10 +90,10 @@ public class ThresholdSetting extends SoftDeletableEntity {
     private Double lelCriticalMax; // 예: 25
 
 
-    public static ThresholdSetting of(String port, String model, String serialNumber) {
+    public static ThresholdSetting of(String model, String port, String serialNumber) {
         return ThresholdSetting.builder()
-                .port(port)
                 .model(model)
+                .port(port)
                 .serialNumber(serialNumber)
 
                 // CO

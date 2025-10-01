@@ -1,6 +1,7 @@
 package com.elim.server.gas_monitoring.event;
 
 import com.elim.server.gas_monitoring.service.SensorService;
+import com.elim.server.gas_monitoring.service.ThresholdSettingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -11,6 +12,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -30,12 +32,13 @@ public class StompEventListener {
 
     // subscriptionKey -> 스케줄러 매핑
     private final Map<String, ScheduledFuture<?>> taskMap = new ConcurrentHashMap<>();
+    private final ThresholdSettingService thresholdSettingService;
 
 
     /**
      * 클라이언트가 STOMP 구독을 시도할 때 호출
-     * <p>기대 destination 형식: /topic/sensor/{sensorName}/{port}/{serialNumber}
-     * 예) /topic/sensor/UA58KFGU/COM3/25090199 </p>
+     * <p>기대 destination 형식: /topic/sensor/{model}/{port}/{serialNumber}
+     * 예) /topic/sensor/UA58-KFG-U/COM3/25090199 </p>
      */
     @EventListener
     public void handleSessionSubscribeEvent(SessionSubscribeEvent event) {
@@ -63,7 +66,10 @@ public class StompEventListener {
             return;
         }
 
-        String key = registerSubscription(model, port, sessionId); // 구독
+        // Threshold 기본값 설정 및 저장
+        thresholdSettingService.initThresholdSettings(model, port, serialNumber);
+
+        String key = registerSubscription(model, port, serialNumber, sessionId); // 구독
 
         startSchedulerIfAbsent(key, model, port, serialNumber); // 스케줄러가 없으면 새로 생성 후 시작
     }
@@ -81,12 +87,17 @@ public class StompEventListener {
         return model.matches("UA58-KFG-U|UA58-LEL");
     }
 
-    private String registerSubscription(String model, String port, String sessionId) {
-        // 세션 ↔ 구독키(센서명:포트) 매핑 저장
-        String key = model + ":" + port; // 예: UA58-KFG-U:COM3
+    private String registerSubscription(
+            String model,
+            String port,
+            String serialNumber,
+            String sessionId
+    ) {
+        // 세션 <-> 구독키(센서명:포트) 매핑 저장
+        String key = model + ":" + port + ":" + serialNumber; // 예: UA58-KFG-U:COM3:25090199
         sessionSubscriptions.put(sessionId, key);
 
-        // 현재 동일 key(=같은 센서/포트)를 구독 중인 세션 수 집계
+        // 현재 동일 key(같은 센서/포트)를 구독 중인 세션 수 집계
         long subscriberCount = sessionSubscriptions.values().stream()
                 .filter(v -> v.equals(key))
                 .count();
@@ -103,11 +114,11 @@ public class StompEventListener {
         );
     }
 
-    private void publishSensorData(String model, String port, String serialNumber, String k) {
+    private void publishSensorData(String model, String port, String serialNumber, String key) {
         try {
             // 최신 구독자 수 계산
             long liveSubscribers = sessionSubscriptions.values().stream()
-                    .filter(v -> v.equals(k))
+                    .filter(v -> v.equals(key))
                     .count();
 
             // 센서 데이터 Object에 담은 후에 응답 보냄
@@ -120,10 +131,10 @@ public class StompEventListener {
 
             // 구독자에게 메세지 전달
             messagingTemplate.convertAndSend("/topic/sensor/" + model + "/" + port + "/" + serialNumber, dto);
-            log.info("key={}, 구독자수={}, data={}", k, liveSubscribers, dto);
+            log.info("key={}, 구독자수={}, data={}", key, liveSubscribers, dto);
 
         } catch (Exception e) {
-            log.error("Sensor read error key={}", k, e);
+            log.error("Sensor read error key={}", key, e);
         }
     }
 
@@ -135,7 +146,6 @@ public class StompEventListener {
     public void handleSessionUnsubscribeEvent(SessionUnsubscribeEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = accessor.getSessionId();
-
         removeSession(sessionId);
     }
 
@@ -147,7 +157,6 @@ public class StompEventListener {
     public void handleSessionDisconnectEvent(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = accessor.getSessionId();
-
         removeSession(sessionId);
     }
 
@@ -168,8 +177,14 @@ public class StompEventListener {
                 ScheduledFuture<?> task = this.taskMap.remove(subscriptionKey);
                 if (task != null) {
                     task.cancel(false); // 인터럽트 없이 취소 — 실행 중이던 read 는 1번 더 돌 수 있음
-                    log.info("⚡ 모든 세션 종료 → 포트 {} 스케줄러 중단", subscriptionKey);
+                    log.info("⚡ 모든 세션 종료 -> 포트 {} 스케줄러 중단", subscriptionKey);
                 }
+
+                String[] parts = subscriptionKey.split(":");
+                System.out.println("parts = " + Arrays.toString(parts));
+
+                // parts[0]=model, parts[1]=port, parts[2]=serialNumber
+                thresholdSettingService.deleteThresholdSetting(parts[0], parts[1], parts[2]);
             }
         }
     }
