@@ -58,7 +58,7 @@ public class SensorController implements SensorApiDocs {
     public ResponseEntity<CommonResponse<UA58KFGMeasurementResponseDto>> readKfgSensorValues(
             @RequestParam String port
     ) {
-        UA58KFGMeasurementResponseDto response = sensorService.readValuesFromKFG(port);
+        UA58KFGMeasurementResponseDto response = sensorService.readValuesFromKFG(port, null, null);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 
@@ -86,7 +86,7 @@ public class SensorController implements SensorApiDocs {
     public ResponseEntity<CommonResponse<UA58LELMeasurementResponseDto>> readLelSensorValues(
             @RequestParam String port
     ) {
-        UA58LELMeasurementResponseDto response = sensorService.readValuesFromLEL(port);
+        UA58LELMeasurementResponseDto response = sensorService.readValuesFromLEL(port, null, null);
         return ResponseEntity.ok(CommonResponse.success(response));
     }
 

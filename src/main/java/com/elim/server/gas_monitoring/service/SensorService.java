@@ -77,7 +77,7 @@ public class SensorService {
     /**
      * 센서 측정값 조회 (KFG)
      * */
-    public UA58KFGMeasurementResponseDto readValuesFromKFG(String port) {
+    public UA58KFGMeasurementResponseDto readValuesFromKFG(String port, String model, String serialNumber) {
         SerialPort comPort = initPort(port); // 포트 연결 및 기본 설정
 
         try {
@@ -112,7 +112,11 @@ public class SensorService {
     /**
      * 센서 측정값 조회(LEL)
      * */
-    public UA58LELMeasurementResponseDto readValuesFromLEL(String port) {
+    public UA58LELMeasurementResponseDto readValuesFromLEL(
+            String port,
+            String model,
+            String serialNumber
+    ) {
         SerialPort comPort = initPort(port); // 포트 연결 및 기본 설정
 
         try {

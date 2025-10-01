@@ -45,20 +45,21 @@ public class StompEventListener {
         // sensor 토픽만 처리
         if (destination != null && destination.startsWith("/topic/sensor/")) {
 
-            // /topic/sensor/UA58KFGU/COM3 → ["", "topic", "sensor", "UA58KFGU", "COM3"]
+            // /topic/sensor/UA58KFGU/COM3/25070073 → ["", "topic", "sensor", "UA58KFGU", "COM3", "25070073"]
             String[] parts = destination.split("/");
 
-            String sensorName = parts[3]; // 센서 종류 추출, 예) UA58KFGU
+            String model = parts[3]; // 센서 종류 추출, 예) UA58KFGU
             String port = parts[4]; // 포트 번호 추출, 예) COM3
+            String serialNumber = parts[5]; // 시리얼 넘버 추출, 예) 25070073
 
             // 센서명 검증 (whitelist)
-            if (!sensorName.matches("UA58KFGU|UA58LEL")) {
-                log.warn("잘못된 센서명 구독 시도: {}", sensorName);
+            if (!model.matches("UA58KFGU|UA58LEL")) {
+                log.warn("잘못된 센서명 구독 시도: {}", model);
                 return;
             }
 
             // 세션 ↔ 구독키(센서명:포트) 매핑 저장
-            String key = sensorName + ":" + port; // 예: UA58KFGU:COM3
+            String key = model + ":" + port; // 예: UA58KFGU:COM3
             sessionSubscriptions.put(sessionId, key);
 
             // 현재 동일 key(=같은 센서/포트)를 구독 중인 세션 수 집계
@@ -66,8 +67,7 @@ public class StompEventListener {
                     .filter(v -> v.equals(key))
                     .count();
 
-//            log.info("구독자 추가 sessionId={}, port={}", sessionId, port);
-            log.info("구독자 추가 sessionId={}, sensorName={}, port={}, 현재 구독자 수={}", sessionId, sensorName, port, subscriberCount);
+            log.info("구독자 추가 sessionId={}, model={}, port={}, 현재 구독자 수={}", sessionId, model, port, subscriberCount);
 
 
             // 스케줄러가 없으면 새로 생성
@@ -80,13 +80,13 @@ public class StompEventListener {
                                     .count();
 
                             Object dto;
-                            switch (sensorName) {
-                                case "UA58KFGU" -> dto = sensorService.readValuesFromKFG(port);
-                                case "UA58LEL" -> dto = sensorService.readValuesFromLEL(port);
-                                default -> dto = "지원하지 않는 센서명입니다: " + sensorName;
+                            switch (model) {
+                                case "UA58KFGU" -> dto = sensorService.readValuesFromKFG(port, model, serialNumber);
+                                case "UA58LEL" -> dto = sensorService.readValuesFromLEL(port, model, serialNumber);
+                                default -> dto = "지원하지 않는 센서명입니다: " + model;
                             }
 
-                            messagingTemplate.convertAndSend("/topic/sensor/" + sensorName + "/" + port, dto);
+                            messagingTemplate.convertAndSend("/topic/sensor/" + model + "/" + port, dto);
                             log.info("key={}, 구독자수={}, data={}", k, liveSubscribers, dto);
 
                         } catch (Exception e) {
