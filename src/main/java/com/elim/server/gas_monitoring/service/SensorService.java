@@ -79,7 +79,7 @@ public class SensorService {
     /**
      * 센서 측정값 조회 (KFG)
      * */
-    public UA58KFGUMeasurementResponseDto readValuesFromKFG(String port, String model, String serialNumber) {
+    public UA58KFGUMeasurementResponseDto readValuesFromKFGU(String port, String model, String serialNumber) {
         SerialPort comPort = initPort(port); // 포트 연결 및 기본 설정
 
         try {
@@ -118,27 +118,23 @@ public class SensorService {
         double o2 = Double.parseDouble(parts[1]);
         double h2s = Double.parseDouble(parts[2]);
         double co2 = Double.parseDouble(parts[3]);
-        System.out.println("co = " + co);
-        System.out.println("o2 = " + o2);
-        System.out.println("h2s = " + h2s);
-        System.out.println("co2 = " + co2);
 
         List<String> criticalMessages = new ArrayList<>();
         List<String> warningMessages = new ArrayList<>();
 
         // CRITICAL 체크
-        if (co > 200) criticalMessages.add("CO 농도 초과 (" + co + " ppm)");
-        if (o2 < 19.5) criticalMessages.add("산소 부족 (" + o2 + " %)");
-        if (o2 > 23.5) criticalMessages.add("산소 과다 (" + o2 + " %)");
-        if (h2s > 50) criticalMessages.add("H₂S 농도 초과 (" + h2s + " ppm)");
-        if (co2 > 5000) criticalMessages.add("CO₂ 농도 초과 (" + co2 + " ppm)");
+        if (co > 200) criticalMessages.add("위험! CO 농도 초과 (" + co + " ppm)");
+        if (o2 < 19.5) criticalMessages.add("위험! 산소 부족 (" + o2 + " %)");
+        if (o2 > 23.5) criticalMessages.add("위험! 산소 과다 (" + o2 + " %)");
+        if (h2s > 50) criticalMessages.add("위험! H₂S 농도 초과 (" + h2s + " ppm)");
+        if (co2 > 5000) criticalMessages.add("위험! CO₂ 농도 초과 (" + co2 + " ppm)");
 
         // WARNING 체크
-        if (co >= 30 && co <= 200) warningMessages.add("CO 경고 범위 (" + co + " ppm)");
-        if (o2 >= 19.5 && o2 <= 20) warningMessages.add("산소 부족 경계치 (" + o2 + " %)");
-        if (o2 >= 22 && o2 <= 23.5) warningMessages.add("산소 과다 경계치 (" + o2 + " %)");
-        if (h2s >= 5 && h2s <= 50) warningMessages.add("H₂S 경고 범위 (" + h2s + " ppm)");
-        if (co2 >= 1500 && co2 <= 5000) warningMessages.add("CO₂ 경고 범위 (" + co2 + " ppm)");
+        if (co >= 30 && co <= 200) warningMessages.add("경고: CO 농도 주의 (" + co + " ppm)");
+        if (o2 >= 19.5 && o2 <= 20) warningMessages.add("경고: 산소 부족 경계치 (" + o2 + " %)");
+        if (o2 >= 22 && o2 <= 23.5) warningMessages.add("경고: 산소 과다 경계치 (" + o2 + " %)");
+        if (h2s >= 5 && h2s <= 50) warningMessages.add("경고: H₂S 농도 주의 (" + h2s + " ppm)");
+        if (co2 >= 1500 && co2 <= 5000) warningMessages.add("경고: CO₂ 농도 주의 (" + co2 + " ppm)");
 
         // 우선순위 결정 (CRITICAL > WARNING > NORMAL)
         if (!criticalMessages.isEmpty()) {
@@ -172,7 +168,9 @@ public class SensorService {
                 response = removeATCQPrefix(response); // 접두사 제거
 
                 String[] parts = response.split(","); // CSV 파싱
-                AlarmResultResponseDto alarmResultResponseDto = null;
+
+                // 위험 수치 확인
+                AlarmResultResponseDto alarmResultResponseDto = determineUA58LELAlarmLevel(parts);
                 return UA58LELMeasurementResponseDto.of(alarmResultResponseDto, parts);
             } else {
                 throw new IntegrationException(ErrorCode.SENSOR_READ_FAILED, "sensor.read.failed");
@@ -182,8 +180,48 @@ public class SensorService {
         }
     }
 
+    private AlarmResultResponseDto determineUA58LELAlarmLevel(String[] parts) {
+        double lel = Double.parseDouble(parts[0]);
+        int gasId = Integer.parseInt(parts[3]);
+        String gasName = getGasName(gasId);
 
-    
+        List<String> criticalMessages = new ArrayList<>();
+        List<String> warningMessages = new ArrayList<>();
+
+        // CRITICAL 체크
+        if (lel > 25) criticalMessages.add(
+                String.format("위험! %s 농도 초과 (%.2f %%)", gasName, lel)
+        );
+
+        // WARNING 체크
+        if (lel >= 10 && lel <= 25) warningMessages.add(
+                String.format("경고: %s 농도 주의 (%.2f %%)", gasName, lel)
+        );
+
+        // 우선순위 결정 (CRITICAL > WARNING > NORMAL)
+        if (!criticalMessages.isEmpty()) {
+            return AlarmResultResponseDto.of(AlarmLevel.CRITICAL, criticalMessages);
+        } else if (!warningMessages.isEmpty()) {
+            return AlarmResultResponseDto.of(AlarmLevel.WARNING, warningMessages);
+        } else {
+            return AlarmResultResponseDto.normal();
+        }
+    }
+
+    private String getGasName(int gasId) {
+        return switch (gasId) {
+            case 0 -> "No Gas";
+            case 1 -> "Hydrogen";
+            case 2 -> "Hydrogen Mixture";
+            case 3 -> "Methane";
+            case 4 -> "Light Gas (butane, ethane, isobutane, isobutylene, propane, propylene, ethylene)";
+            case 5 -> "Medium Gas (MEK, pentane, acetone, heptane)";
+            case 6 -> "Heavy Gas (octane, styrene, toluene, xylene)";
+            default -> "Unknown Gas";
+        };
+    }
+
+
     /**
      * 전체 포트, 모델명 조회
      * */
