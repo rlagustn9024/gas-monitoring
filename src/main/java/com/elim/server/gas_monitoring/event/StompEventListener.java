@@ -160,7 +160,7 @@ public class StompEventListener {
     private void removeSession(String sessionId) {
         String subscriptionKey = sessionSubscriptions.remove(sessionId);
         if (subscriptionKey != null) {
-            log.info("❌ 세션 종료 sessionId={}, key={}", sessionId, subscriptionKey);
+            log.info("세션 종료 sessionId={}, key={}", sessionId, subscriptionKey);
 
             // 동일 key 로 구독 중인 세션이 남아있는지 확인
             boolean stillSubscribed = sessionSubscriptions.containsValue(subscriptionKey);
