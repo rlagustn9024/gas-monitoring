@@ -241,11 +241,9 @@ public class SensorService {
             try {
                 sendCommand(comPort, "ATCVER\r\n"); // 명령 전송
                 String modelName = sendAndReadReliable(comPort, "ATCVER\r\n", this::parseATCVERResponse); // 모델명 추출
-                System.out.println("modelName = " + modelName);
 
                 sendCommand(comPort, "ATCMODEL\r\n");
                 String serialNumber  = sendAndReadReliable(comPort, "ATCMODEL\r\n", this::parseATCMODELResponse); // 모델명 추출
-                System.out.println("serialNumber = " + serialNumber);
 
                 dtoList.add(SensorPortResponseDto.of(port, modelName, serialNumber));
             } finally {

@@ -90,13 +90,6 @@ public class StompEventListener {
         // 세션 <-> 구독키(센서명:포트) 매핑 저장
         String key = model + ":" + port + ":" + serialNumber; // 예: UA58-KFG-U:COM3:25090199
         sessionSubscriptions.put(sessionId, key);
-
-        // 현재 동일 key(같은 센서/포트)를 구독 중인 세션 수 집계
-        long subscriberCount = sessionSubscriptions.values().stream()
-                .filter(v -> v.equals(key))
-                .count();
-
-        log.info("구독자 추가 sessionId={}, model={}, port={}, 현재 구독자 수={}", sessionId, model, port, subscriberCount);
         return key;
     }
 
@@ -110,11 +103,6 @@ public class StompEventListener {
 
     private void publishSensorData(String model, String port, String serialNumber, String key) {
         try {
-            // 최신 구독자 수 계산
-            long liveSubscribers = sessionSubscriptions.values().stream()
-                    .filter(v -> v.equals(key))
-                    .count();
-
             // 센서 데이터 Object에 담은 후에 응답 보냄
             Object dto;
             switch (model) {
