@@ -126,8 +126,6 @@ public class StompEventListener {
 
             // 구독자에게 메세지 전달
             messagingTemplate.convertAndSend("/topic/sensor/" + model + "/" + port + "/" + serialNumber, dto);
-            log.info("key={}, 구독자수={}, data={}", key, liveSubscribers, dto);
-
         } catch (Exception e) {
             log.error("Sensor read error key={}", key, e);
         }
