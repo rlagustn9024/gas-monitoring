@@ -171,8 +171,6 @@ public class StompEventListener {
                 if (task != null) {
                     task.cancel(false); // 인터럽트 없이 취소 — 실행 중이던 read 는 1번 더 돌 수 있음
                 }
-
-                String[] parts = subscriptionKey.split(":");
             }
         }
     }
