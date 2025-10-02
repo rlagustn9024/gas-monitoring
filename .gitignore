@@ -1,37 +1,55 @@
-HELP.md
-.gradle
+# -------------------------------------
+# 빌드 시스템 및 캐시 관련
+# -------------------------------------
+.gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
 
-### IntelliJ IDEA ###
-.idea
-*.iws
+# -------------------------------------
+# IntelliJ IDEA 관련
+# -------------------------------------
+.idea/
 *.iml
-*.ipr
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
 
-### VS Code ###
+# -------------------------------------
+# VS Code 관련
+# -------------------------------------
 .vscode/
+
+
+# -------------------------------------
+# 로그 파일 및 디렉토리
+# -------------------------------------
+logs/
+*.log
+log/
+
+
+# -------------------------------------
+# 임시 파일, 백업 파일
+# -------------------------------------
+*.tmp
+*.bak
+*.orig
+*.old
+*.backup
+.DS_Store
+Thumbs.db
+*.swp
+
+
+# -------------------------------------
+# 중요정보 및 환경파일
+# -------------------------------------
+.env
+.env.*
+**/.env
+**/.env.*
+**/application-secret.yml
