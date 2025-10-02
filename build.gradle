@@ -46,6 +46,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+	// 모니터링
+	implementation 'org.springframework.boot:spring-boot-starter-actuator' //actuator 추가
+	implementation 'io.micrometer:micrometer-registry-prometheus' // 프로메테우스 추가
 }
 
 tasks.named('test') {
