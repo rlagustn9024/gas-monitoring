@@ -1,6 +1,9 @@
 package com.elim.server.gas_monitoring.service;
 
 import com.elim.server.gas_monitoring.common.cache.CacheDebugService;
+import com.elim.server.gas_monitoring.common.cache.CacheKeyGenerator;
+import com.elim.server.gas_monitoring.common.cache.CacheNames;
+import com.elim.server.gas_monitoring.common.cache.CacheService;
 import com.elim.server.gas_monitoring.domain.sensor.threshold.ThresholdSetting;
 import com.elim.server.gas_monitoring.dto.request.threshold.ThresholdSettingUpdateRequestDto;
 import com.elim.server.gas_monitoring.dto.response.sensor.threshold.ThresholdSettingInitResponseDto;
@@ -14,15 +17,20 @@ import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ThresholdSettingService {
 
+    private final CacheManager cacheManager;
     private final ThresholdSettingReader thresholdSettingReader;
     private final ThresholdSettingRepository thresholdSettingRepository;
     private final CacheDebugService cacheDebugService;
+    private final CacheService cacheService;
+    private final CacheKeyGenerator cacheKeyGenerator;
 
 
     /**
@@ -37,15 +45,38 @@ public class ThresholdSettingService {
             String port,
             String serialNumber
     ) {
-        // 기본값으로 생성
-        return thresholdSettingReader.fetchActiveByModelAndPortAndSerialNumber(model, port, serialNumber)
+        ThresholdSettingInitResponseDto result = thresholdSettingReader
+                .fetchActiveByModelAndPortAndSerialNumber(model, port, serialNumber)
                 .map(ThresholdSettingInitResponseDto::from) // 있으면 그대로 반환
                 .orElseGet(() -> { // 없으면 새로 생성
                     ThresholdSetting thresholdSetting = ThresholdSetting.of(model, port, serialNumber);
                     thresholdSettingRepository.save(thresholdSetting);
+
+                    String key = String.format("%s|%s|%s", model, port, serialNumber);
+                    Objects.requireNonNull(cacheManager.getCache("thresholdSettings")).put(key, thresholdSetting);
+
                     return ThresholdSettingInitResponseDto.from(thresholdSetting);
                 });
+
+        cacheDebugService.printAllCacheValues(); // 디버깅용
+        return result;
     }
+
+    //    @Transactional
+//    public ThresholdSettingInitResponseDto initThresholdSettings(
+//            String model,
+//            String port,
+//            String serialNumber
+//    ) {
+//        // 기본값으로 생성
+//        return thresholdSettingReader.fetchActiveByModelAndPortAndSerialNumber(model, port, serialNumber)
+//                .map(ThresholdSettingInitResponseDto::from) // 있으면 그대로 반환
+//                .orElseGet(() -> { // 없으면 새로 생성
+//                    ThresholdSetting thresholdSetting = ThresholdSetting.of(model, port, serialNumber);
+//                    thresholdSettingRepository.save(thresholdSetting);
+//                    return ThresholdSettingInitResponseDto.from(thresholdSetting);
+//                });
+//    }
 
 
     /**
@@ -55,11 +86,23 @@ public class ThresholdSettingService {
     public void deleteThresholdSetting(String model, String port, String serialNumber) {
         ThresholdSetting thresholdSetting = getThresholdSetting(model, port, serialNumber);
         thresholdSetting.softDelete();
+
+        evictThresholdSettingCacheAfterCommit(model, port, serialNumber); // 캐시 무효화
     }
 
     private ThresholdSetting getThresholdSetting(String model, String port, String serialNumber) {
         return thresholdSettingReader.fetchActiveByModelAndPortAndSerialNumber(model, port, serialNumber)
                 .orElseThrow(() -> new NotFoundException("thresholdSetting.not.found"));
+    }
+
+    private void evictThresholdSettingCacheAfterCommit(
+            String model,
+            String port,
+            String serialNumber
+    ) {
+        String cacheKey = cacheKeyGenerator.generateThresholdSettingKey(model, port, serialNumber);
+        cacheService.evictAfterCommit(CacheNames.THRESHOLD_SETTINGS, cacheKey);
+        cacheDebugService.printAllCacheValues(); // 디버깅용
     }
 
 
@@ -72,6 +115,9 @@ public class ThresholdSettingService {
         ThresholdSetting thresholdSetting =
                 getThresholdSetting(dto.getModel(), dto.getPort(), dto.getSerialNumber());
         thresholdSetting.update(dto);
+
+        // 캐시 무효화
+        evictThresholdSettingCacheAfterCommit(dto.getModel(), dto.getPort(), dto.getSerialNumber());
         return ThresholdSettingUpdateResponseDto.of(thresholdSetting);
     }
 }

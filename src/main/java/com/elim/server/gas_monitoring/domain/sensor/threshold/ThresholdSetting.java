@@ -91,6 +91,9 @@ public class ThresholdSetting extends SoftDeletableEntity {
     private Double lelCriticalMax; // 예: 25
 
 
+    /**
+     * 생성 메서드
+     * */
     public static ThresholdSetting of(String model, String port, String serialNumber) {
         return ThresholdSetting.builder()
                 .model(model)
@@ -127,6 +130,10 @@ public class ThresholdSetting extends SoftDeletableEntity {
                 .build();
     }
 
+    
+    /**
+     * 비즈니스 로직
+     * */
     public void update(ThresholdSettingUpdateRequestDto dto) {
         // ========================== CO ==========================
         this.coWarningMin = dto.getCoWarningMin();
@@ -155,5 +162,33 @@ public class ThresholdSetting extends SoftDeletableEntity {
         this.lelWarningMin = dto.getLelWarningMin();
         this.lelWarningMax = dto.getLelWarningMax();
         this.lelCriticalMax = dto.getLelCriticalMax();
+    }
+
+    @Override
+    public String toString() {
+        return "ThresholdSetting{" +
+                "id=" + id +
+                ", model='" + model + '\'' +
+                ", port='" + port + '\'' +
+                ", serialNumber='" + serialNumber + '\'' +
+                ", coWarningMin=" + coWarningMin +
+                ", coWarningMax=" + coWarningMax +
+                ", coCriticalMax=" + coCriticalMax +
+                ", o2WarningMin1=" + o2WarningMin1 +
+                ", o2WarningMin2=" + o2WarningMin2 +
+                ", o2WarningMax1=" + o2WarningMax1 +
+                ", o2WarningMax2=" + o2WarningMax2 +
+                ", o2CriticalMin=" + o2CriticalMin +
+                ", o2CriticalMax=" + o2CriticalMax +
+                ", h2sWarningMin=" + h2sWarningMin +
+                ", h2sWarningMax=" + h2sWarningMax +
+                ", h2sCriticalMax=" + h2sCriticalMax +
+                ", co2WarningMin=" + co2WarningMin +
+                ", co2WarningMax=" + co2WarningMax +
+                ", co2CriticalMax=" + co2CriticalMax +
+                ", lelWarningMin=" + lelWarningMin +
+                ", lelWarningMax=" + lelWarningMax +
+                ", lelCriticalMax=" + lelCriticalMax +
+                '}';
     }
 }
