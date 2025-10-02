@@ -1,7 +1,6 @@
 package com.elim.server.gas_monitoring.event;
 
 import com.elim.server.gas_monitoring.service.SensorService;
-import com.elim.server.gas_monitoring.service.ThresholdSettingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -32,7 +31,6 @@ public class StompEventListener {
 
     // subscriptionKey -> 스케줄러 매핑
     private final Map<String, ScheduledFuture<?>> taskMap = new ConcurrentHashMap<>();
-    private final ThresholdSettingService thresholdSettingService;
 
 
     /**
@@ -65,9 +63,6 @@ public class StompEventListener {
             log.warn("잘못된 센서명 구독 시도: {}", model);
             return;
         }
-
-        // Threshold 기본값 설정 및 저장
-        thresholdSettingService.initThresholdSettings(model, port, serialNumber);
 
         String key = registerSubscription(model, port, serialNumber, sessionId); // 구독
 
@@ -177,14 +172,9 @@ public class StompEventListener {
                 ScheduledFuture<?> task = this.taskMap.remove(subscriptionKey);
                 if (task != null) {
                     task.cancel(false); // 인터럽트 없이 취소 — 실행 중이던 read 는 1번 더 돌 수 있음
-                    log.info("⚡ 모든 세션 종료 -> 포트 {} 스케줄러 중단", subscriptionKey);
                 }
 
                 String[] parts = subscriptionKey.split(":");
-                System.out.println("parts = " + Arrays.toString(parts));
-
-                // parts[0]=model, parts[1]=port, parts[2]=serialNumber
-                thresholdSettingService.deleteThresholdSetting(parts[0], parts[1], parts[2]);
             }
         }
     }
