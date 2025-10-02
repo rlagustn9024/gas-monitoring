@@ -1,0 +1,79 @@
+version: "3.8"
+
+services:
+  app-api-server:
+    # AWS ECR 리포지토리의 URI가 여기에 들어감. :develop 은 태그임
+    image: gas-monitoring:latest # 로컬에서 빌드한 이미지 사용
+    container_name: app-api-server
+    ports:
+      - "8081:8081"  # 포트 포워딩
+    volumes:
+      - ./logs:/app/logs  # 윈도우 경로 매핑 (로그)
+    environment:
+      - SPRING_PROFILES_ACTIVE=local # 여기에 설정한 profile로 application.yml 에서 실행함
+    entrypoint: ["java", "-Xms2g", "-Xmx4g", "-jar", "app.jar"] # 메모리 4기가 할당
+    restart: unless-stopped # 도커 컨테이너가 꺼졌을 때 자동으로 다시 켜지도록 설정 (직접 stop 한 경우에만 재시작 안됨)
+    networks:
+      - app-network
+    
+    # 로그 파일 최대 크기 10mb, 3개 이상 쌓이면 이전건 자동으로 삭제
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+
+
+  # 프로메테우스는 수집한 메트릭 데이터를 최대 15일까지 저장함. 필요하면 나중에 직접 설정해도 됨
+  prometheus:
+    image: prom/prometheus:v2.53.4
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml' # 프로메테우스 설정 파일 위치 지정
+
+    # 이 경로들에 해당하는 디렉토리는 미리 존재해야 함. 저절로 안생김
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus.rules.yml:/etc/prometheus/prometheus.rules.yml
+      - ./monitoring/data/prometheus:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - app-network
+    environment:
+      - TZ=Asia/Seoul
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+
+  grafana:
+    image: grafana/grafana:12.0.1
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./monitoring/data/grafana:/var/lib/grafana
+    environment:
+      - GF_SERVER_ROOT_URL=http://localhost:3000/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  grafana-storage:
+
+networks:
+  app-network:
+    driver: bridge
+# 나중에 컨테이너 별 메모리 사용량까지 제한설정 해주는게 좋음
